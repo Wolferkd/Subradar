@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SubRadar — Auto-Sync Cloud</title>
+    <!-- Tailwind CSS per un design moderno -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Manifest per trasformarla in App Nativa / PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#020617">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen p-4 sm:p-8 font-sans">
+
+    <div class="max-w-xl mx-auto">
+        <!-- Header -->
+        <header class="text-center mb-6">
+            <h1 class="text-2xl font-black tracking-wider text-cyan-400">SUB<span class="text-white">RADAR</span> <span class="text-xs bg-cyan-950 text-cyan-300 px-2 py-0.5 rounded-full border border-cyan-800">CLOUD SYNC 🇮🇹</span></h1>
+            <p class="text-slate-400 text-xs mt-1">Prezzi e listini aggiornati automaticamente dal Cloud</p>
+        </header>
+
+        <!-- Stato Connessione Cloud -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-6 flex items-center justify-between shadow-lg">
+            <div class="flex items-center space-x-3">
+                <div id="cloudDot" class="w-3 h-3 bg-amber-500 rounded-full animate-pulse"></div>
+                <div>
+                    <span id="cloudStatusText" class="text-xs font-bold text-white block">Connessione al Cloud...</span>
+                    <span class="text-[11px] text-slate-400">Sincronizzazione listino automatica</span>
+                </div>
+            </div>
+            <button onclick="syncCloudData()" class="bg-slate-800 hover:bg-slate-700 text-cyan-400 text-xs font-bold px-3 py-2 rounded-xl border border-slate-700 transition">
+                🔄 Aggiorna
+            </button>
+        </div>
+
+        <!-- Form Inserimento -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl mb-6">
+            <h2 class="text-sm font-semibold mb-2 text-cyan-300">🔍 Cerca Servizio o Piano Ufficiale</h2>
+            <p class="text-xs text-slate-400 mb-4">Inclusi piani mensili e annuali (es. Crunchyroll, Netflix, Spotify...)</p>
+            
+            <form id="subForm" class="space-y-4">
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1">Seleziona dal Listino</label>
+                    <input type="text" id="serviceSearch" list="officialList" placeholder="Scrivi per cercare..." 
+                        class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-cyan-400 text-sm" autocomplete="off">
+                    <datalist id="officialList"></datalist>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+                    <div>
+                        <span class="text-[10px] uppercase text-slate-400 block">Prezzo Ufficiale Cloud</span>
+                        <span id="previewPrice" class="text-lg font-black text-emerald-400">€0.00</span>
+                    </div>
+                    <div>
+                        <span class="text-[10px] uppercase text-slate-400 block">Fatturazione</span>
+                        <span id="previewBilling" class="text-xs font-bold text-cyan-400">-</span>
+                    </div>
+                </div>
+                <input type="hidden" id="selectedId">
+
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1">Utilizzo Mensile</label>
+                    <select id="subHours" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-cyan-400 text-sm">
+                        <option value="60">🔥 Intensivo (~60h/m)</option>
+                        <option value="30" selected>⚡ Regolare (~30h/m)</option>
+                        <option value="12">👍 Moderato (~12h/m)</option>
+                        <option value="4">⚠️ Basso (~4h/m)</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold py-3 rounded-xl transition shadow-lg text-sm">
+                    Aggiungi al Monitoraggio
+                </button>
+            </form>
+        </div>
+
+        <!-- Lista Abbonamenti -->
+        <div class="space-y-3 mb-6">
+            <h2 class="text-sm font-semibold text-slate-300">Abbonamenti Monitorati (<span id="subCount">0</span>)</h2>
+            <div id="subList" class="space-y-3"></div>
+        </div>
+
+        <button onclick="openReport()" class="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 text-slate-950 font-black py-3.5 rounded-2xl shadow-xl text-sm mb-12">
+            🏁 GENERA RESOCONTO FINANZIARIO
+        </button>
+    </div>
+
+    <!-- Modale Resoconto -->
+    <div id="reportModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 relative">
+            <button onclick="closeReport()" class="absolute top-5 right-5 text-slate-400 hover:text-white font-bold">✕</button>
+            <h2 class="text-xl font-black text-cyan-400 mb-4">📋 Resoconto Spese</h2>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 mb-4">
+                <span class="text-[10px] text-slate-400 block uppercase">Spesa Mensile Totale</span>
+                <span id="resTotal" class="text-xl font-black text-white">€0.00</span>
+            </div>
+            <div id="resList" class="space-y-2 max-h-48 overflow-y-auto mb-4 text-xs"></div>
+            <button onclick="closeReport()" class="w-full bg-slate-800 text-white font-bold py-2.5 rounded-xl text-xs">Chiudi</button>
+        </div>
+    </div>
+
+    <script>
+        // LISTINO CLOUD (In produzione questo viene caricato da un file esterno prezzi.json via fetch)
+        let officialBenchmarks = {};
+
+        const cloudDatabaseFallback = {
+            "crunchyroll_fan_m": { name: "Crunchyroll Fan (Mensile)", price: 4.99, billing: "Mensile" },
+            "crunchyroll_fan_y": { name: "Crunchyroll Fan (Annuale - diviso mese)", price: 4.16, billing: "Annuale" },
+            "crunchyroll_megafan_m": { name: "Crunchyroll Mega Fan (Mensile)", price: 6.49, billing: "Mensile" },
+            "crunchyroll_megafan_y": { name: "Crunchyroll Mega Fan (Annuale - diviso mese)", price: 5.41, billing: "Annuale" },
+            "netflix_std": { name: "Netflix Standard", price: 13.99, billing: "Mensile" },
+            "netflix_prem": { name: "Netflix Premium 4K", price: 19.99, billing: "Mensile" },
+            "spotify_ind": { name: "Spotify Individual", price: 10.99, billing: "Mensile" },
+            "prime_video": { name: "Amazon Prime Video", price: 4.99, billing: "Mensile" },
+            "disney_std": { name: "Disney+ Standard", price: 8.99, billing: "Mensile" },
+            "chatgpt_plus": { name: "ChatGPT Plus", price: 22.00, billing: "Mensile" },
+            "telepass_plus": { name: "Telepass Plus", price: 4.90, billing: "Mensile" }
+        };
+
+        function syncCloudData() {
+            const dot = document.getElementById('cloudDot');
+            const status = document.getElementById('cloudStatusText');
+            status.innerText = "Sincronizzazione in corso...";
+
+            // Simulazione di fetch reale dal cloud (es. fetch('https://tuodominio.it/prices.json'))
+            setTimeout(() => {
+                officialBenchmarks = cloudDatabaseFallback;
+                dot.className = "w-3 h-3 bg-emerald-500 rounded-full animate-pulse";
+                status.innerText = "Cloud Sincronizzato con successo";
+                populateDatalist();
+                renderSubs();
+            }, 500);
+        }
+
+        const officialList = document.getElementById('officialList');
+        function populateDatalist() {
+            officialList.innerHTML = '';
+            for (let id in officialBenchmarks) {
+                const item = officialBenchmarks[id];
+                const opt = document.createElement('option');
+                opt.value = item.name;
+                officialList.appendChild(opt);
+            }
+        }
+
+        const serviceSearch = document.getElementById('serviceSearch');
+        const previewPrice = document.getElementById('previewPrice');
+        const previewBilling = document.getElementById('previewBilling');
+        const selectedId = document.getElementById('selectedId');
+
+        serviceSearch.addEventListener('input', (e) => {
+            const val = e.target.value.trim();
+            let foundKey = null;
+            for (let id in officialBenchmarks) {
+                if (officialBenchmarks[id].name.toLowerCase() === val.toLowerCase()) {
+                    foundKey = id;
+                    break;
+                }
+            }
+            if (foundKey) {
+                const item = officialBenchmarks[foundKey];
+                selectedId.value = foundKey;
+                previewPrice.innerText = `€${item.price.toFixed(2)}`;
+                previewBilling.innerText = item.billing;
+            } else {
+                selectedId.value = "";
+                previewPrice.innerText = "€0.00";
+                previewBilling.innerText = "-";
+            }
+        });
+
+        let subscriptions = JSON.parse(localStorage.getItem('subradar_final')) || [];
+
+        function renderSubs() {
+            const subList = document.getElementById('subList');
+            subList.innerHTML = '';
+            document.getElementById('subCount').innerText = subscriptions.length;
+
+            if (subscriptions.length === 0) {
+                subList.innerHTML = `<p class="text-slate-500 text-center py-6 bg-slate-900/50 rounded-xl text-xs border border-slate-800/50">Nessun abbonamento monitorato.</p>`;
+                return;
+            }
+
+            subscriptions.forEach((sub, index) => {
+                // Aggiornamento automatico basato sull'ID cloud
+                if (officialBenchmarks[sub.id]) {
+                    sub.name = officialBenchmarks[sub.id].name;
+                    sub.cost = officialBenchmarks[sub.id].price;
+                    sub.billing = officialBenchmarks[sub.id].billing;
+                }
+
+                const card = document.createElement('div');
+                card.className = "bg-slate-900 border border-slate-800 p-3.5 rounded-xl flex items-center justify-between shadow-sm";
+                card.innerHTML = `
+                    <div>
+                        <span class="font-bold text-white text-sm block">${sub.name}</span>
+                        <span class="text-[11px] text-cyan-400">Fatturazione: ${sub.billing}</span>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <span class="text-emerald-400 font-black text-sm">€${sub.cost.toFixed(2)}</span>
+                        <button onclick="removeSub(${index})" class="text-slate-500 hover:text-rose-400 font-bold text-xs p-1">✕</button>
+                    </div>
+                `;
+                subList.appendChild(card);
+            });
+            localStorage.setItem('subradar_final', JSON.stringify(subscriptions));
+        }
+
+        document.getElementById('subForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = selectedId.value;
+            if (!id || !officialBenchmarks[id]) {
+                alert("Seleziona un servizio valido dall'elenco.");
+                return;
+            }
+
+            subscriptions.push({
+                id: id,
+                name: officialBenchmarks[id].name,
+                cost: officialBenchmarks[id].price,
+                billing: officialBenchmarks[id].billing,
+                hours: parseInt(document.getElementById('subHours').value)
+            });
+
+            localStorage.setItem('subradar_final', JSON.stringify(subscriptions));
+            document.getElementById('subForm').reset();
+            selectedId.value = "";
+            previewPrice.innerText = "€0.00";
+            previewBilling.innerText = "-";
+            renderStats();
+            renderSubs();
+        });
+
+        window.removeSub = function(index) {
+            subscriptions.splice(index, 1);
+            localStorage.setItem('subradar_final', JSON.stringify(subscriptions));
+            renderSubs();
+        }
+
+        window.openReport = function() {
+            if (subscriptions.length === 0) {
+                alert("Aggiungi prima almeno un abbonamento.");
+                return;
+            }
+            let total = 0;
+            const resList = document.getElementById('resList');
+            resList.innerHTML = '';
+
+            subscriptions.forEach(sub => {
+                total += sub.cost;
+                const row = document.createElement('div');
+                row.className = "flex justify-between bg-slate-950 p-2.5 rounded-lg border border-slate-800";
+                row.innerHTML = `<span class="text-white">${sub.name}</span><span class="font-bold text-emerald-400">€${sub.cost.toFixed(2)}/m</span>`;
+                resList.appendChild(row);
+            });
+
+            document.getElementById('resTotal').innerText = `€${total.toFixed(2)}`;
+            document.getElementById('reportModal').classList.remove('hidden');
+        }
+
+        window.closeReport = function() {
+            document.getElementById('reportModal').classList.add('hidden');
+        }
+
+        syncCloudData();
+    </script>
+</body>
+</html>
