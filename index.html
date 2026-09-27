@@ -1,373 +1,284 @@
-<div class="max-w-xl mx-auto">
-    <!-- Header -->
-    <header class="text-center mb-6">
-        <h1 class="text-2xl font-black tracking-wider text-cyan-400">SUB<span class="text-white">RADAR</span> <span class="text-xs bg-cyan-950 text-cyan-300 px-2 py-0.5 rounded-full border border-cyan-800">100+ LISTINO 🇮🇹</span></h1>
-        <p class="text-slate-400 text-xs mt-1">Monitoraggio abbonamenti con valutazione di utilità (1-10)</p>
-    </header>
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subradar - Calcolatore Convenienza Abbonamenti</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #0f172a; color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+  </style>
+</head>
+<body class="min-h-screen pb-12">
 
-    <!-- Stato Connessione Cloud -->
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-6 flex items-center justify-between shadow-lg">
-        <div class="flex items-center space-x-3">
-            <div id="cloudDot" class="w-3 h-3 bg-amber-500 rounded-full animate-pulse"></div>
-            <div>
-                <span id="cloudStatusText" class="text-xs font-bold text-white block">Connessione al Cloud...</span>
-                <span class="text-[11px] text-slate-400">Catalogo 100+ servizi italiani</span>
-            </div>
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-900/80 sticky top-0 z-50 backdrop-blur-md">
+    <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="p-2 bg-indigo-600 rounded-lg shadow-lg shadow-indigo-500/30">
+          <i class="fa-solid font-bold fa-radar text-2xl text-white"></i>
         </div>
-        <button onclick="syncCloudData()" class="bg-slate-800 hover:bg-slate-700 text-cyan-400 text-xs font-bold px-3 py-2 rounded-xl border border-slate-700 transition">
-            🔄 Aggiorna
+        <div>
+          <h1 class="text-xl font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">Subradar</h1>
+          <p class="text-xs text-slate-400">Quanto ti costa davvero ogni ora d'uso?</p>
+        </div>
+      </div>
+      <span class="text-xs font-semibold px-2.5 py-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full">Database Prezzi 2026 Active</span>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 mt-8 space-y-8">
+
+    <!-- Form Aggiunta Abbonamento -->
+    <section class="card rounded-2xl p-6 shadow-xl">
+      <h2 class="text-lg font-semibold mb-4 text-slate-200 flex items-center gap-2">
+        <i class="fa-solid fa-plus-circle text-indigo-400"></i> Seleziona Abbonamento
+      </h2>
+
+      <form id="sub-form" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          <!-- Selezione o Ricerca Abbonamento -->
+          <div>
+            <label class="block text-xs font-medium text-slate-400 mb-1">Nome Abbonamento (Prezzo Auto-Cercato)</label>
+            <input 
+              list="subscription-presets" 
+              id="sub-name" 
+              placeholder="Es. Netflix, Spotify, ChatGPT..." 
+              required
+              class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition"
+              oninput="autoFetchPrice()"
+            >
+            <datalist id="subscription-presets">
+              <!-- Popolato in automatico da JS -->
+            </datalist>
+          </div>
+
+          <!-- Prezzo Automatico (Read-Only) -->
+          <div>
+            <label class="block text-xs font-medium text-slate-400 mb-1">Prezzo Mensile Ufficiale (€/mese)</label>
+            <div class="relative">
+              <input 
+                type="number" 
+                step="0.01" 
+                id="sub-price" 
+                placeholder="Auto-riempito" 
+                readonly
+                class="w-full bg-slate-800/60 border border-slate-700/60 rounded-lg px-4 py-2.5 text-indigo-300 font-semibold focus:outline-none cursor-not-allowed"
+              >
+              <span class="absolute right-3 top-2.5 text-xs text-slate-500">Auto-cercato</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Ore Utilizzo Settimanale -->
+        <div>
+          <div class="flex justify-between text-xs font-medium text-slate-400 mb-1">
+            <span>Ore di utilizzo stimate a settimana</span>
+            <span id="hours-val" class="text-indigo-400 font-bold">5 ore/settimana</span>
+          </div>
+          <input 
+            type="range" 
+            id="sub-hours" 
+            min="1" 
+            max="70" 
+            value="5" 
+            class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+            oninput="document.getElementById('hours-val').innerText = this.value + ' ore/settimana'"
+          >
+        </div>
+
+        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2.5 rounded-lg transition shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-calculator"></i> Aggiungi al Radar
         </button>
-    </div>
+      </form>
+    </section>
 
-    <!-- Form Inserimento -->
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl mb-6">
-        <h2 class="text-sm font-semibold mb-2 text-cyan-300">🔍 Cerca tra 100+ Servizi e Piani</h2>
-        <p class="text-xs text-slate-400 mb-4">Streaming, AI, Cloud, Gaming, Telefonia, Software e altro...</p>
-        
-        <form id="subForm" class="space-y-4">
-            <div>
-                <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1">Seleziona dal Listino</label>
-                <input type="text" id="serviceSearch" list="officialList" placeholder="Scrivi (es. Netflix, GPT, Spotify, TIM...)" 
-                    class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-cyan-400 text-sm" autocomplete="off">
-                <datalist id="officialList"></datalist>
-            </div>
+    <!-- Statistiche e Risultati -->
+    <section id="results-section" class="space-y-4 hidden">
+      <div class="flex justify-between items-center">
+        <h2 class="text-lg font-semibold text-slate-200">I Tuoi Abbonamenti</h2>
+        <span id="total-monthly-cost" class="text-sm font-bold text-slate-300">Spesa Totale: 0.00 €/mese</span>
+      </div>
 
-            <div class="grid grid-cols-2 gap-4 bg-slate-950/60 p-3 rounded-xl border border-slate-800">
-                <div>
-                    <span class="text-[10px] uppercase text-slate-400 block">Prezzo Ufficiale Cloud</span>
-                    <span id="previewPrice" class="text-lg font-black text-emerald-400">€0.00</span>
-                </div>
-                <div>
-                    <span class="text-[10px] uppercase text-slate-400 block">Fatturazione</span>
-                    <span id="previewBilling" class="text-xs font-bold text-cyan-400">-</span>
-                </div>
-            </div>
-            <input type="hidden" id="selectedId">
+      <div id="subscriptions-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Schede Abbonamenti generate dinamicamente -->
+      </div>
+    </section>
 
-            <div>
-                <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1">Valutazione Utilità (1 = Inutile, 10 = Essenziale)</label>
-                <div class="flex items-center space-x-3 bg-slate-950 p-3 rounded-xl border border-slate-800">
-                    <input type="range" id="subRating" min="1" max="10" value="8" class="w-full accent-cyan-400 cursor-pointer" oninput="document.getElementById('ratingVal').innerText = this.value">
-                    <span id="ratingVal" class="text-cyan-400 font-black text-base w-6 text-center">8</span>
-                </div>
-            </div>
+  </main>
 
-            <button type="submit" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold py-3 rounded-xl transition shadow-lg text-sm">
-                Aggiungi al Monitoraggio
-            </button>
-        </form>
-    </div>
+  <script>
+    // Database integrato dei principali abbonamenti (Prezzi aggiornati 2026)
+    const SUBSCRIPTION_DATABASE = [
+      { name: "Netflix Standard con pubblicità", price: 6.99 },
+      { name: "Netflix Standard", price: 13.99 },
+      { name: "Netflix Premium 4K", price: 19.99 },
+      { name: "Spotify Individuale", price: 12.14 },
+      { name: "Spotify Duo", price: 17.20 },
+      { name: "Spotify Famiglia", price: 21.24 },
+      { name: "Spotify Studenti", price: 7.07 },
+      { name: "Disney+ Standard con pubblicità", price: 6.99 },
+      { name: "Disney+ Standard", price: 10.99 },
+      { name: "Disney+ Premium 4K", price: 15.99 },
+      { name: "DAZN Sports", price: 14.99 },
+      { name: "DAZN Goal", price: 19.99 },
+      { name: "DAZN Full", price: 46.99 },
+      { name: "Amazon Prime", price: 4.99 },
+      { name: "YouTube Premium", price: 11.99 },
+      { name: "ChatGPT Plus", price: 22.00 },
+      { name: "Claude Pro", price: 22.00 },
+      { name: "Apple Music", price: 11.99 },
+      { name: "Apple One", price: 19.95 },
+      { name: "Xbox Game Pass Ultimate", price: 17.99 },
+      { name: "PlayStation Plus Extra", price: 13.99 },
+      { name: "iCloud+ 200GB", price: 2.99 },
+      { name: "Google One 100GB", price: 1.99 }
+    ];
 
-    <!-- Lista Abbonamenti -->
-    <div class="space-y-3 mb-6">
-        <h2 class="text-sm font-semibold text-slate-300">Abbonamenti Monitorati (<span id="subCount">0</span>)</h2>
-        <div id="subList" class="space-y-3"></div>
-    </div>
+    let subscriptions = JSON.parse(localStorage.getItem('subradar_subs')) || [];
 
-    <button onclick="openReport()" class="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 text-slate-950 font-black py-3.5 rounded-2xl shadow-xl text-sm mb-12">
-        🏁 GENERA RESOCONTO E VALUTAZIONE FINALE
-    </button>
-</div>
-
-<!-- Modale Resoconto -->
-<div id="reportModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 relative">
-        <button onclick="closeReport()" class="absolute top-5 right-5 text-slate-400 hover:text-white font-bold">✕</button>
-        <h2 class="text-xl font-black text-cyan-400 mb-4">📋 Resoconto & Valutazione Finanziaria</h2>
-        
-        <div class="grid grid-cols-2 gap-3 mb-4">
-            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
-                <span class="text-[10px] text-slate-400 block uppercase">Spesa Mensile Totale</span>
-                <span id="resTotal" class="text-lg font-black text-white">€0.00</span>
-            </div>
-            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
-                <span class="text-[10px] text-slate-400 block uppercase">Indice di Utilità Medio</span>
-                <span id="resScore" class="text-lg font-black text-cyan-400">0/10</span>
-            </div>
-        </div>
-
-        <div id="resVerdict" class="p-3 rounded-xl text-xs mb-4 border font-medium"></div>
-        <div id="resList" class="space-y-2 max-h-40 overflow-y-auto mb-4 text-xs"></div>
-        <button onclick="closeReport()" class="w-full bg-slate-800 text-white font-bold py-2.5 rounded-xl text-xs">Chiudi</button>
-    </div>
-</div>
-
-<script>
-    let officialBenchmarks = {};
-
-    // Database completo con oltre 100 servizi e piani sul mercato italiano
-    const cloudDatabaseFallback = {
-        // Streaming Video
-        "netflix_std": { name: "Netflix Standard", price: 13.99, billing: "Mensile" },
-        "netflix_prem": { name: "Netflix Premium 4K", price: 19.99, billing: "Mensile" },
-        "prime_video_m": { name: "Amazon Prime (Mensile)", price: 4.99, billing: "Mensile" },
-        "prime_video_y": { name: "Amazon Prime (Annuale diviso mese)", price: 4.16, billing: "Annuale" },
-        "disney_std": { name: "Disney+ Standard", price: 8.99, billing: "Mensile" },
-        "disney_prem": { name: "Disney+ Premium", price: 13.99, billing: "Mensile" },
-        "dazn_standard": { name: "DAZN Standard", price: 44.99, billing: "Mensile" },
-        "dazn_standard_y": { name: "DAZN Standard (Annuale diviso mese)", price: 34.99, billing: "Annuale" },
-        "dazn_plus": { name: "DAZN Plus", price: 59.99, billing: "Mensile" },
-        "dazn_plus_y": { name: "DAZN Plus (Annuale diviso mese)", price: 45.99, billing: "Annuale" },
-        "now_ent_cinema": { name: "NOW Pass Entertainment + Cinema", price: 14.99, billing: "Mensile" },
-        "now_sport": { name: "NOW Pass Sport", price: 24.99, billing: "Mensile" },
-        "appletv_plus": { name: "Apple TV+", price: 9.99, billing: "Mensile" },
-        "paramount_plus": { name: "Paramount+", price: 7.99, billing: "Mensile" },
-        "discovery_plus": { name: "Discovery+", price: 7.99, billing: "Mensile" },
-        "crunchyroll_fan_m": { name: "Crunchyroll Fan (Mensile)", price: 4.99, billing: "Mensile" },
-        "crunchyroll_fan_y": { name: "Crunchyroll Fan (Annuale diviso mese)", price: 4.16, billing: "Annuale" },
-        "crunchyroll_megafan_m": { name: "Crunchyroll Mega Fan (Mensile)", price: 6.49, billing: "Mensile" },
-        "crunchyroll_megafan_y": { name: "Crunchyroll Mega Fan (Annuale diviso mese)", price: 5.41, billing: "Annuale" },
-        "mubi": { name: "MUBI", price: 11.99, billing: "Mensile" },
-        "infinity_plus": { name: "Infinity+", price: 7.99, billing: "Mensile" },
-        "timvision_calcio": { name: "TIMVISION Calcio e Sport", price: 24.99, billing: "Mensile" },
-
-        // Streaming Musicale e Podcast
-        "spotify_ind": { name: "Spotify Individual", price: 10.99, billing: "Mensile" },
-        "spotify_duo": { name: "Spotify Duo", price: 14.99, billing: "Mensile" },
-        "spotify_fam": { name: "Spotify Family", price: 17.99, billing: "Mensile" },
-        "applemusic_ind": { name: "Apple Music Individual", price: 10.99, billing: "Mensile" },
-        "applemusic_fam": { name: "Apple Music Family", price: 16.99, billing: "Mensile" },
-        "youtube_prem": { name: "YouTube Premium", price: 12.99, billing: "Mensile" },
-        "amazon_music_unl": { name: "Amazon Music Unlimited", price: 10.99, billing: "Mensile" },
-        "tidal_hifi": { name: "Tidal HiFi", price: 10.99, billing: "Mensile" },
-        "deezer_prem": { name: "Deezer Premium", price: 11.99, billing: "Mensile" },
-        "qobuz": { name: "Qobuz Solo", price: 12.50, billing: "Mensile" },
-        "soundcloud_go": { name: "SoundCloud Go+", price: 9.99, billing: "Mensile" },
-
-        // AI & Produttività
-        "chatgpt_plus": { name: "ChatGPT Plus", price: 22.00, billing: "Mensile" },
-        "claude_pro": { name: "Claude Pro", price: 22.00, billing: "Mensile" },
-        "midjourney": { name: "Midjourney Basic", price: 10.00, billing: "Mensile" },
-        "github_copilot": { name: "GitHub Copilot", price: 10.00, billing: "Mensile" },
-        "perplexity_pro": { name: "Perplexity Pro", price: 20.00, billing: "Mensile" },
-        "microsoft_365_pers": { name: "Microsoft 365 Personal", price: 7.00, billing: "Mensile" },
-        "microsoft_365_fam": { name: "Microsoft 365 Family", price: 10.00, billing: "Mensile" },
-        "adobe_foto": { name: "Adobe Creative Cloud Fotografia", price: 24.39, billing: "Mensile" },
-        "adobe_all": { name: "Adobe Creative Cloud Tutte le App", price: 65.99, billing: "Mensile" },
-        "canva_pro": { name: "Canva Pro", price: 11.99, billing: "Mensile" },
-        "notion_plus": { name: "Notion Plus", price: 10.00, billing: "Mensile" },
-        "evernote_pers": { name: "Evernote Personal", price: 9.99, billing: "Mensile" },
-        "dropbox_plus": { name: "Dropbox Plus (2TB)", price: 11.99, billing: "Mensile" },
-
-        // Cloud Storage & Backup
-        "google_one_100": { name: "Google One (100 GB)", price: 1.99, billing: "Mensile" },
-        "google_one_200": { name: "Google One (200 GB)", price: 2.99, billing: "Mensile" },
-        "google_one_2tb": { name: "Google One (2 TB)", price: 9.99, billing: "Mensile" },
-        "icloud_50gb": { name: "Apple iCloud+ (50 GB)", price: 0.99, billing: "Mensile" },
-        "icloud_200gb": { name: "Apple iCloud+ (200 GB)", price: 2.99, billing: "Mensile" },
-        "icloud_2tb": { name: "Apple iCloud+ (2 TB)", price: 9.99, billing: "Mensile" },
-        "onedrive_1tb": { name: "Microsoft OneDrive (100 GB Standalone)", price: 2.00, billing: "Mensile" },
-
-        // VPN & Sicurezza
-        "nordvpn": { name: "NordVPN (Media Mensile)", price: 4.50, billing: "Annuale" },
-        "expressvpn": { name: "ExpressVPN (Media Mensile)", price: 6.70, billing: "Annuale" },
-        "surfshark": { name: "Surfshark VPN (Media Mensile)", price: 2.50, billing: "Annuale" },
-        "bitwarden": { name: "Bitwarden Premium", price: 0.83, billing: "Annuale" },
-        "onepassword": { name: "1Password Personal", price: 2.99, billing: "Mensile" },
-
-        // Gaming & Abbonamenti Console
-        "xbox_gamepass_pc": { name: "Xbox Game Pass (PC)", price: 11.99, billing: "Mensile" },
-        "xbox_gamepass_ult": { name: "Xbox Game Pass Ultimate", price: 17.99, billing: "Mensile" },
-        "ps_plus_ess": { name: "PlayStation Plus Essential", price: 8.99, billing: "Mensile" },
-        "ps_plus_ext": { name: "PlayStation Plus Extra", price: 13.99, billing: "Mensile" },
-        "ps_plus_prem": { name: "PlayStation Plus Premium", price: 16.99, billing: "Mensile" },
-        "nintendo_online": { name: "Nintendo Switch Online", price: 3.99, billing: "Mensile" },
-        "nintendo_online_exp": { name: "Nintendo Switch Online + Pacchetto Aggiuntivo", price: 33.99, billing: "Annuale" },
-        "geforce_now_pri": { name: "GeForce NOW Priority", price: 10.99, billing: "Mensile" },
-        "geforce_now_ult": { name: "GeForce NOW Ultimate", price: 21.99, billing: "Mensile" },
-        "ea_play": { name: "EA Play", price: 3.99, billing: "Mensile" },
-        "ubisoft_plus": { name: "Ubisoft+", price: 17.99, billing: "Mensile" },
-
-        // Mobilità, Servizi & Utility
-        "telepass_base": { name: "Telepass Base", price: 3.90, billing: "Mensile" },
-        "telepass_plus": { name: "Telepass Plus", price: 4.90, billing: "Mensile" },
-        "eni_plenitude": { name: "Eni Plenitude (Servizi Casa)", price: 5.00, billing: "Mensile" },
-
-        // Telefonia & Internet Fissa / Mobile
-        "iliad_mobile": { name: "Iliad Mobile", price: 9.99, billing: "Mensile" },
-        "vodafone_mobile": { name: "Vodafone Mobile", price: 12.99, billing: "Mensile" },
-        "tim_mobile": { name: "TIM Mobile", price: 11.99, billing: "Mensile" },
-        "windtre_mobile": { name: "WindTre Mobile", price: 10.99, billing: "Mensile" },
-        "fastweb_fibra": { name: "Fastweb Casa Fibra", price: 27.95, billing: "Mensile" },
-        "vodafone_fibra": { name: "Vodafone Internet Unlimited Casa", price: 27.90, billing: "Mensile" },
-        "tim_fibra": { name: "TIM WiFi Casa", price: 30.90, billing: "Mensile" },
-
-        // Editoria & News
-        "corriere_sera": { name: "Corriere della Sera Digital", price: 4.99, billing: "Mensile" },
-        "repubblica": { name: "La Repubblica Digital", price: 4.99, billing: "Mensile" },
-        "sole24ore": { name: "Il Sole 24 Ore Digitale", price: 19.90, billing: "Mensile" },
-        "gazzetta": { name: "La Gazzetta dello Sport Digital", price: 4.99, billing: "Mensile" },
-        "internazionale": { name: "Internazionale Abbonamento", price: 5.00, billing: "Mensile" }
-    };
-
-    function syncCloudData() {
-        const dot = document.getElementById('cloudDot');
-        const status = document.getElementById('cloudStatusText');
-        status.innerText = "Sincronizzazione in corso...";
-
-        setTimeout(() => {
-            officialBenchmarks = cloudDatabaseFallback;
-            dot.className = "w-3 h-3 bg-emerald-500 rounded-full animate-pulse";
-            status.innerText = "Cloud Sincronizzato (100+ Servizi)";
-            populateDatalist();
-            renderSubs();
-        }, 400);
+    // Popola il datalist delle opzioni
+    function initDatalist() {
+      const datalist = document.getElementById('subscription-presets');
+      datalist.innerHTML = '';
+      SUBSCRIPTION_DATABASE.forEach(item => {
+        const option = document.createElement('option');
+        option.value = item.name;
+        option.label = `€${item.price.toFixed(2)}/mese`;
+        datalist.appendChild(option);
+      });
     }
 
-    const officialList = document.getElementById('officialList');
-    function populateDatalist() {
-        officialList.innerHTML = '';
-        for (let id in officialBenchmarks) {
-            const item = officialBenchmarks[id];
-            const opt = document.createElement('option');
-            opt.value = item.name;
-            officialList.appendChild(opt);
-        }
+    // Ricerca automatica prezzo
+    function autoFetchPrice() {
+      const inputName = document.getElementById('sub-name').value.trim().toLowerCase();
+      const priceInput = document.getElementById('sub-price');
+
+      if (!inputName) {
+        priceInput.value = '';
+        return;
+      }
+
+      // Cerca corrispondenza esatta o parziale
+      const match = SUBSCRIPTION_DATABASE.find(item => 
+        item.name.toLowerCase() === inputName || item.name.toLowerCase().includes(inputName)
+      );
+
+      if (match) {
+        priceInput.value = match.price.toFixed(2);
+      } else {
+        priceInput.value = ''; // Inserimento non trovato
+      }
     }
 
-    const serviceSearch = document.getElementById('serviceSearch');
-    const previewPrice = document.getElementById('previewPrice');
-    const previewBilling = document.getElementById('previewBilling');
-    const selectedId = document.getElementById('selectedId');
+    // Calcolo costo orario
+    function calculateHourlyRate(price, weeklyHours) {
+      const monthlyHours = weeklyHours * 4.33; // Media settimane in un mese
+      return price / monthlyHours;
+    }
 
-    serviceSearch.addEventListener('input', (e) => {
-        const val = e.target.value.trim();
-        let foundKey = null;
-        for (let id in officialBenchmarks) {
-            if (officialBenchmarks[id].name.toLowerCase() === val.toLowerCase()) {
-                foundKey = id;
-                break;
-            }
-        }
-        if (foundKey) {
-            const item = officialBenchmarks[foundKey];
-            selectedId.value = foundKey;
-            previewPrice.innerText = `€${item.price.toFixed(2)}`;
-            previewBilling.innerText = item.billing;
-        } else {
-            selectedId.value = "";
-            previewPrice.innerText = "€0.00";
-            previewBilling.innerText = "-";
-        }
+    // Giudizio convenienza
+    function getConvenienceBadge(costPerHour) {
+      if (costPerHour <= 0.50) {
+        return { label: 'Eccellente Valore', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' };
+      } else if (costPerHour <= 1.50) {
+        return { label: 'Buona Convenienza', color: 'bg-blue-500/10 text-blue-400 border-blue-500/20' };
+      } else if (costPerHour <= 3.00) {
+        return { label: 'Poco Utilizzato', color: 'bg-amber-500/10 text-amber-400 border-amber-500/20' };
+      } else {
+        return { label: 'Possibile Spreco', color: 'bg-rose-500/10 text-rose-400 border-rose-500/20' };
+      }
+    }
+
+    // Renderizza la lista abbonamenti
+    function renderSubscriptions() {
+      const listContainer = document.getElementById('subscriptions-list');
+      const resultsSection = document.getElementById('results-section');
+      const totalMonthlyCostEl = document.getElementById('total-monthly-cost');
+
+      listContainer.innerHTML = '';
+
+      if (subscriptions.length === 0) {
+        resultsSection.classList.add('hidden');
+        return;
+      }
+
+      resultsSection.classList.remove('hidden');
+
+      let totalCost = 0;
+
+      subscriptions.forEach((sub, index) => {
+        totalCost += parseFloat(sub.price);
+        const costPerHour = calculateHourlyRate(sub.price, sub.hours);
+        const badge = getConvenienceBadge(costPerHour);
+
+        const card = document.createElement('div');
+        card.className = "card rounded-xl p-5 relative border border-slate-700/50 shadow-md flex flex-col justify-between";
+        card.innerHTML = `
+          <div>
+            <div class="flex justify-between items-start mb-2">
+              <h3 class="font-bold text-lg text-white">${sub.name}</h3>
+              <button onclick="deleteSubscription(${index})" class="text-slate-500 hover:text-rose-400 transition text-sm">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+            <span class="inline-block text-xs font-semibold px-2.5 py-0.5 rounded border ${badge.color} mb-4">
+              ${badge.label}
+            </span>
+            <div class="space-y-1 text-sm text-slate-300">
+              <p class="flex justify-between"><span>Prezzo Mensile:</span> <span class="font-semibold text-white">€${parseFloat(sub.price).toFixed(2)}</span></p>
+              <p class="flex justify-between"><span>Uso Settimanale:</span> <span class="font-semibold text-white">${sub.hours} ore</span></p>
+            </div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-700/50 flex justify-between items-center">
+            <span class="text-xs text-slate-400">Costo orario reale:</span>
+            <span class="text-xl font-bold text-indigo-400">€${costPerHour.toFixed(2)}<span class="text-xs font-normal text-slate-400">/ora</span></span>
+          </div>
+        `;
+        listContainer.appendChild(card);
+      });
+
+      totalMonthlyCostEl.innerText = `Spesa Totale: €${totalCost.toFixed(2)}/mese`;
+    }
+
+    // Gestione Invio Form
+    document.getElementById('sub-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('sub-name').value.trim();
+      const price = parseFloat(document.getElementById('sub-price').value);
+      const hours = parseInt(document.getElementById('sub-hours').value);
+
+      if (!name || isNaN(price)) {
+        alert("Seleziona un abbonamento valido dalla lista o inserisci un nome riconosciuto.");
+        return;
+      }
+
+      subscriptions.push({ name, price, hours });
+      localStorage.setItem('subradar_subs', JSON.stringify(subscriptions));
+
+      // Reset form
+      document.getElementById('sub-name').value = '';
+      document.getElementById('sub-price').value = '';
+      document.getElementById('sub-hours').value = '5';
+      document.getElementById('hours-val').innerText = '5 ore/settimana';
+
+      renderSubscriptions();
     });
 
-    let subscriptions = JSON.parse(localStorage.getItem('subradar_final_v2')) || [];
-
-    function renderSubs() {
-        const subList = document.getElementById('subList');
-        subList.innerHTML = '';
-        document.getElementById('subCount').innerText = subscriptions.length;
-
-        if (subscriptions.length === 0) {
-            subList.innerHTML = `<p class="text-slate-500 text-center py-6 bg-slate-900/50 rounded-xl text-xs border border-slate-800/50">Nessun abbonamento monitorato.</p>`;
-            return;
-        }
-
-        subscriptions.forEach((sub, index) => {
-            if (officialBenchmarks[sub.id]) {
-                sub.name = officialBenchmarks[sub.id].name;
-                sub.cost = officialBenchmarks[sub.id].price;
-                sub.billing = officialBenchmarks[sub.id].billing;
-            }
-
-            // Colore in base alla valutazione (1-4 rosso, 5-7 giallo, 8-10 verde)
-            let ratingColor = "text-emerald-400 border-emerald-900 bg-emerald-950/40";
-            if (sub.rating <= 4) ratingColor = "text-rose-400 border-rose-900 bg-rose-950/40";
-            else if (sub.rating <= 7) ratingColor = "text-amber-400 border-amber-900 bg-amber-950/40";
-
-            const card = document.createElement('div');
-            card.className = "bg-slate-900 border border-slate-800 p-3.5 rounded-xl flex items-center justify-between shadow-sm";
-            card.innerHTML = `
-                <div>
-                    <span class="font-bold text-white text-sm block">${sub.name}</span>
-                    <div class="flex items-center space-x-2 mt-1">
-                        <span class="text-[10px] text-cyan-400">Fatturazione: ${sub.billing}</span>
-                        <span class="text-[10px] px-2 py-0.5 rounded-full border ${ratingColor}">Utilità: ${sub.rating}/10</span>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-3">
-                    <span class="text-emerald-400 font-black text-sm">€${sub.cost.toFixed(2)}</span>
-                    <button onclick="removeSub(${index})" class="text-slate-500 hover:text-rose-400 font-bold text-xs p-1">✕</button>
-                </div>
-            `;
-            subList.appendChild(card);
-        });
-        localStorage.setItem('subradar_final_v2', JSON.stringify(subscriptions));
+    // Elimina abbonamento
+    function deleteSubscription(index) {
+      subscriptions.splice(index, 1);
+      localStorage.setItem('subradar_subs', JSON.stringify(subscriptions));
+      renderSubscriptions();
     }
 
-    document.getElementById('subForm').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const id = selectedId.value;
-        if (!id || !officialBenchmarks[id]) {
-            alert("Seleziona un servizio valido dall'elenco.");
-            return;
-        }
-
-        subscriptions.push({
-            id: id,
-            name: officialBenchmarks[id].name,
-            cost: officialBenchmarks[id].price,
-            billing: officialBenchmarks[id].billing,
-            rating: parseInt(document.getElementById('subRating').value)
-        });
-
-        localStorage.setItem('subradar_final_v2', JSON.stringify(subscriptions));
-        document.getElementById('subForm').reset();
-        selectedId.value = "";
-        previewPrice.innerText = "€0.00";
-        previewBilling.innerText = "-";
-        document.getElementById('subRating').value = 8;
-        document.getElementById('ratingVal').innerText = "8";
-        renderSubs();
-    });
-
-    window.removeSub = function(index) {
-        subscriptions.splice(index, 1);
-        localStorage.setItem('subradar_final_v2', JSON.stringify(subscriptions));
-        renderSubs();
-    }
-
-    window.openReport = function() {
-        if (subscriptions.length === 0) {
-            alert("Aggiungi prima almeno un abbonamento.");
-            return;
-        }
-        let total = 0;
-        let totalRating = 0;
-        const resList = document.getElementById('resList');
-        resList.innerHTML = '';
-
-        subscriptions.forEach(sub => {
-            total += sub.cost;
-            totalRating += sub.rating;
-            const row = document.createElement('div');
-            row.className = "flex justify-between items-center bg-slate-950 p-2.5 rounded-lg border border-slate-800";
-            row.innerHTML = `<span class="text-white">${sub.name} <span class="text-[10px] text-slate-400">(Voto: ${sub.rating}/10)</span></span><span class="font-bold text-emerald-400">€${sub.cost.toFixed(2)}/m</span>`;
-            resList.appendChild(row);
-        });
-
-        const avgRating = (totalRating / subscriptions.length).toFixed(1);
-        document.getElementById('resTotal').innerText = `€${total.toFixed(2)}`;
-        document.getElementById('resScore').innerText = `${avgRating} / 10`;
-
-        const verdict = document.getElementById('resVerdict');
-        if (avgRating >= 8.0) {
-            verdict.className = "p-3 rounded-xl text-xs mb-4 border bg-emerald-950/50 border-emerald-800 text-emerald-300";
-            verdict.innerHTML = "🌟 <b>Eccellente gestione!</b> I tuoi abbonamenti hanno un valore d'uso molto alto rispetto a quello che spendi.";
-        } else if (avgRating >= 5.5) {
-            verdict.className = "p-3 rounded-xl text-xs mb-4 border bg-amber-950/50 border-amber-800 text-amber-300";
-            verdict.innerHTML = "⚠️ <b>Spesa discreta:</b> Stai mantenendo qualche abbonamento con utilità medio-bassa. Valuta se disdirne qualcuno.";
-        } else {
-            verdict.className = "p-3 rounded-xl text-xs mb-4 border bg-rose-950/50 border-rose-800 text-rose-300";
-            verdict.innerHTML = "🚨 <b>Attenzione agli sprechi!</b> La media di utilità è bassa. Stai spendendo soldi in servizi che usi poco o apprezzi poco.";
-        }
-
-        document.getElementById('reportModal').classList.remove('hidden');
-    }
-
-    window.closeReport = function() {
-        document.getElementById('reportModal').classList.add('hidden');
-    }
-
-    syncCloudData();
-</script>
+    // Inizializzazione
+    initDatalist();
+    renderSubscriptions();
+  </script>
+</body>
+</html>
