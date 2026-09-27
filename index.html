@@ -4,26 +4,26 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SubCheck - Analizzatore Abbonamenti</title>
-  <!-- Tailwind CSS per la grafica -->
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome per le icone -->
+  <!-- FontAwesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans min-h-screen pb-12">
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen pb-12">
 
   <!-- Header / Navbar -->
-  <header class="bg-indigo-600 text-white shadow-md mb-8">
+  <header class="bg-[#4F46E5] text-white shadow-md mb-8">
     <div class="max-w-5xl mx-auto px-4 py-5 flex items-center justify-between">
       <div class="flex items-center space-x-3">
-        <i class="fa-solid fa-wallet text-3xl"></i>
+        <div class="w-10 h-10 bg-white text-indigo-600 rounded-xl flex items-center justify-center text-2xl shadow-sm">
+          <i class="fa-solid fa-wallet"></i>
+        </div>
         <div>
-          <h1 class="text-2xl font-bold tracking-tight">SubCheck</h1>
-          <p class="text-xs text-indigo-200">Gestisci e analizza i tuoi abbonamenti</p>
+          <h1 class="text-2xl font-bold tracking-tight leading-tight">SubCheck</h1>
+          <p class="text-xs text-indigo-100">Gestisci e analizza i tuoi abbonamenti</p>
         </div>
       </div>
-      <button id="demoBtn" onclick="loadDemoData()" class="text-xs bg-indigo-500 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg transition">
-        <i class="fa-solid fa-magic mr-1"></i> Dati Demo
-      </button>
+      <!-- Il pulsante Demo è stato rimosso come richiesto -->
     </div>
   </header>
 
@@ -31,60 +31,63 @@
 
     <!-- KPI / Summary Cards -->
     <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
         <div>
           <p class="text-sm font-medium text-slate-500">Spesa Mensile</p>
           <p id="totalMonthly" class="text-3xl font-extrabold text-slate-900 mt-1">€ 0.00</p>
         </div>
-        <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center text-xl">
+        <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl">
           <i class="fa-solid fa-calendar-days"></i>
         </div>
       </div>
 
-      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
         <div>
           <p class="text-sm font-medium text-slate-500">Spesa Annuale</p>
           <p id="totalYearly" class="text-3xl font-extrabold text-indigo-600 mt-1">€ 0.00</p>
         </div>
-        <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center text-xl">
+        <div class="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-xl flex items-center justify-center text-xl">
           <i class="fa-solid fa-piggy-bank"></i>
         </div>
       </div>
 
-      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
         <div>
           <p class="text-sm font-medium text-slate-500">Abbonamenti Attivi</p>
           <p id="totalCount" class="text-3xl font-extrabold text-slate-900 mt-1">0</p>
         </div>
-        <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center text-xl">
+        <div class="w-12 h-12 bg-amber-50 text-amber-500 rounded-xl flex items-center justify-center text-xl">
           <i class="fa-solid fa-list-check"></i>
         </div>
       </div>
     </section>
 
     <!-- Content Grid: Form + List -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
       
-      <!-- Aggiungi Abbonamento -->
-      <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-fit">
-        <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-          <i class="fa-solid fa-circle-plus text-indigo-600"></i> Nuovo Abbonamento
+      <!-- Colonna Form Aggiungi (Più stretta) -->
+      <section class="lg:col-span-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-fit">
+        <h2 class="text-lg font-bold text-slate-900 mb-5 flex items-center gap-2">
+          <div class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-sm">
+            <i class="fa-solid fa-plus"></i>
+          </div>
+          Nuovo Abbonamento
         </h2>
 
         <form id="subForm" onsubmit="addSubscription(event)" class="space-y-4">
           <div>
-            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nome Servizio</label>
-            <input type="text" id="name" required placeholder="es. Netflix, Spotify, Palestra" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">Nome Servizio</label>
+            <input type="text" id="name" required placeholder="es. Netflix, Spotify, Palestra" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none transition-shadow">
           </div>
 
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Costo (€)</label>
-              <input type="number" id="cost" step="0.01" min="0" required placeholder="9.99" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+              <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">Costo (€)</label>
+              <input type="number" id="cost" step="0.01" min="0" required placeholder="9.99" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-shadow">
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Frequenza</label>
-              <select id="cycle" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
+              <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">Frequenza</label>
+              <select id="cycle" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white transition-shadow">
                 <option value="monthly">Mensile</option>
                 <option value="yearly">Annuale</option>
               </select>
@@ -92,37 +95,66 @@
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Categoria</label>
-            <select id="category" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
-              <option value="Intrattenimento">🎬 Intrattenimento</option>
-              <option value="Musica">🎵 Musica</option>
+            <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">Categoria (15 Opzioni)</label>
+            <select id="category" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white transition-shadow">
+              <option value="Intrattenimento">🎬 Intrattenimento (Video)</option>
+              <option value="Musica">🎵 Musica & Podcast</option>
+              <option value="Gaming">🎮 Gaming</option>
               <option value="Lavoro">💼 Lavoro & Produttività</option>
               <option value="Fitness">🏋️ Fitness & Sport</option>
-              <option value="Gaming">🎮 Gaming</option>
+              <option value="Informazione">📰 Informazione & Editoria</option>
+              <option value="Cloud">☁️ Cloud & Hosting</option>
+              <option value="Trasporti">🚗 Trasporti & Mobilità</option>
+              <option value="Cibo">🍔 Cibo & Delivery</option>
+              <option value="Istruzione">📚 Istruzione & Corsi</option>
+              <option value="E-commerce">🛍️ E-commerce & Spedizioni</option>
+              <option value="Sicurezza">🛡️ Sicurezza & VPN</option>
+              <option value="Telefonia">📱 Telefonia & Internet</option>
+              <option value="Finanza">💳 Finanza & Banche</option>
               <option value="Altro">📦 Altro</option>
             </select>
           </div>
 
-          <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg shadow transition flex items-center justify-center gap-2">
-            <i class="fa-solid fa-plus"></i> Aggiungi Abbonamento
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">Uso Reale del servizio</label>
+            <select id="usage" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white transition-shadow">
+              <option value="30">Tutti i giorni (30 usi/mese)</option>
+              <option value="20">Solo giorni feriali (20 usi/mese)</option>
+              <option value="15">A giorni alterni (15 usi/mese)</option>
+              <option value="8">2 volte a settimana (8 usi/mese)</option>
+              <option value="4">1 volta a settimana (4 usi/mese)</option>
+              <option value="2">Ogni 2 settimane (2 usi/mese)</option>
+              <option value="1">1 volta al mese (1 uso/mese)</option>
+              <option value="0.5">1 volta ogni 2 mesi</option>
+              <option value="0.33">1 volta ogni 3 mesi</option>
+              <option value="0.16">2 volte all'anno</option>
+              <option value="0.08">1 volta all'anno</option>
+              <option value="0.04">Molto raramente</option>
+              <option value="0">Mai usato (Spreco totale)</option>
+            </select>
+            <p class="text-[10px] text-slate-400 mt-1 leading-tight">Serve per calcolare il costo per singolo utilizzo e il voto di convenienza.</p>
+          </div>
+
+          <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg shadow-sm transition-colors mt-2">
+            Aggiungi
           </button>
         </form>
       </section>
 
-      <!-- Elenco Abbonamenti -->
-      <section class="lg:col-span-2 space-y-4">
-        <div class="flex items-center justify-between">
+      <!-- Colonna Elenco (Più larga) -->
+      <section class="lg:col-span-8 space-y-4">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-200">
           <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-            <i class="fa-solid fa-credit-card text-indigo-600"></i> I tuoi Abbonamenti
+            <i class="fa-regular fa-credit-card text-indigo-600"></i> I tuoi Abbonamenti
           </h2>
-          <button onclick="clearAll()" class="text-xs text-rose-600 hover:text-rose-800 font-medium transition">
+          <button onclick="clearAll()" class="text-xs text-rose-500 hover:text-rose-700 font-medium transition-colors">
             Elimina Tutti
           </button>
         </div>
 
-        <!-- Lista vuota o piena -->
+        <!-- Container Card -->
         <div id="subsContainer" class="space-y-3">
-          <!-- Gli abbonamenti appariranno qui -->
+          <!-- Render via JS -->
         </div>
       </section>
 
@@ -130,22 +162,24 @@
   </main>
 
   <script>
-    // Stato dell'applicazione
-    let subscriptions = JSON.parse(localStorage.getItem('subcheck_data')) || [];
+    let subscriptions = JSON.parse(localStorage.getItem('subcheck_v2_data')) || [];
 
-    // Salva nel localStorage
     function saveData() {
-      localStorage.setItem('subcheck_data', JSON.stringify(subscriptions));
+      localStorage.setItem('subcheck_v2_data', JSON.stringify(subscriptions));
       render();
     }
 
-    // Aggiungi abbonamento
+    // Aggiunta
     function addSubscription(e) {
       e.preventDefault();
       const name = document.getElementById('name').value.trim();
       const cost = parseFloat(document.getElementById('cost').value);
       const cycle = document.getElementById('cycle').value;
       const category = document.getElementById('category').value;
+      
+      const usageSelect = document.getElementById('usage');
+      const usesPerMonth = parseFloat(usageSelect.value);
+      const usageText = usageSelect.options[usageSelect.selectedIndex].text.split(' (')[0]; 
 
       if (!name || isNaN(cost)) return;
 
@@ -154,23 +188,22 @@
         name,
         cost,
         cycle,
-        category
+        category,
+        usesPerMonth,
+        usageText
       };
 
       subscriptions.push(newSub);
       saveData();
-
-      // Reset form
       document.getElementById('subForm').reset();
     }
 
-    // Elimina abbonamento
+    // Eliminazione
     function deleteSub(id) {
       subscriptions = subscriptions.filter(sub => sub.id !== id);
       saveData();
     }
 
-    // Cancella tutto
     function clearAll() {
       if (subscriptions.length === 0) return;
       if (confirm('Sei sicuro di voler eliminare tutti gli abbonamenti?')) {
@@ -179,18 +212,22 @@
       }
     }
 
-    // Carica dati di esempio
-    function loadDemoData() {
-      subscriptions = [
-        { id: 1, name: 'Netflix', cost: 12.99, cycle: 'monthly', category: 'Intrattenimento' },
-        { id: 2, name: 'Spotify', cost: 9.99, cycle: 'monthly', category: 'Musica' },
-        { id: 3, name: 'Amazon Prime', cost: 49.90, cycle: 'yearly', category: 'Intrattenimento' },
-        { id: 4, name: 'Palestra', cost: 45.00, cycle: 'monthly', category: 'Fitness' }
-      ];
-      saveData();
+    // Algoritmo di Valutazione (Voto 1-10)
+    function calculateRating(costPerUse, usesPerMonth) {
+      if (usesPerMonth === 0) return 1; // Se non lo usi, voto pessimo
+      if (costPerUse <= 0.10) return 10;
+      if (costPerUse <= 0.30) return 9;
+      if (costPerUse <= 0.80) return 8;
+      if (costPerUse <= 2.00) return 7;
+      if (costPerUse <= 4.00) return 6;
+      if (costPerUse <= 7.00) return 5;
+      if (costPerUse <= 12.00) return 4;
+      if (costPerUse <= 20.00) return 3;
+      if (costPerUse <= 40.00) return 2;
+      return 1;
     }
 
-    // Rendering dell'interfaccia
+    // Rendering principale
     function render() {
       const container = document.getElementById('subsContainer');
       container.innerHTML = '';
@@ -200,45 +237,83 @@
 
       if (subscriptions.length === 0) {
         container.innerHTML = `
-          <div class="bg-white rounded-2xl p-8 text-center border border-slate-200 text-slate-400">
-            <i class="fa-regular fa-folder-open text-4xl mb-3 block"></i>
-            Nessun abbonamento inserito. Aggiungine uno per iniziare!
+          <div class="bg-white rounded-2xl p-10 text-center border border-slate-100 text-slate-400 mt-4 shadow-sm">
+            <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl text-slate-300">
+              <i class="fa-solid fa-ghost"></i>
+            </div>
+            <p class="font-medium text-slate-600">Nessun abbonamento inserito.</p>
+            <p class="text-sm mt-1">Aggiungi il tuo primo servizio dal pannello laterale.</p>
           </div>
         `;
       } else {
         subscriptions.forEach(sub => {
-          // Calcoli spesa
+          // Calcoli Costo Mensile / Annuale
           const mCost = sub.cycle === 'monthly' ? sub.cost : sub.cost / 12;
           const yCost = sub.cycle === 'yearly' ? sub.cost : sub.cost * 12;
-
           monthlyTotal += mCost;
           yearlyTotal += yCost;
 
-          // Card Abbonamento
+          // Gestione retrocompatibilità se i vecchi dati non hanno "usesPerMonth"
+          const uses = sub.usesPerMonth !== undefined ? sub.usesPerMonth : 30; 
+          const useText = sub.usageText || 'Non specificato';
+
+          // Calcolo Costo per Singolo Utilizzo
+          let costPerUse = 0;
+          let costPerUseText = "";
+          
+          if (uses === 0) {
+            costPerUse = Infinity;
+            costPerUseText = "Puro Spreco!";
+          } else {
+            costPerUse = mCost / uses;
+            costPerUseText = `€ ${costPerUse.toFixed(2)} a volta`;
+          }
+
+          // Calcolo Voto App
+          const rating = calculateRating(costPerUse, uses);
+          let badgeClass = "bg-slate-100 text-slate-600";
+          if (rating >= 8) badgeClass = "bg-emerald-100 text-emerald-700 border-emerald-200";
+          else if (rating >= 5) badgeClass = "bg-amber-100 text-amber-700 border-amber-200";
+          else badgeClass = "bg-rose-100 text-rose-700 border-rose-200";
+
+          // Creazione Card DOM
           const card = document.createElement('div');
-          card.className = 'bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between hover:border-indigo-200 transition';
+          card.className = 'bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:shadow-md transition-shadow';
           card.innerHTML = `
-            <div class="flex items-center space-x-3">
-              <div class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center font-bold text-slate-600 text-sm">
+            <!-- Info Principali -->
+            <div class="flex items-center space-x-4">
+              <div class="w-12 h-12 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center font-bold text-slate-700 text-lg shadow-sm">
                 ${sub.name.charAt(0).toUpperCase()}
               </div>
               <div>
-                <h3 class="font-bold text-slate-800">${sub.name}</h3>
-                <div class="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
-                  <span class="bg-slate-100 px-2 py-0.5 rounded text-slate-600 font-medium">${sub.category}</span>
+                <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+                  ${sub.name}
+                  <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border ${badgeClass}">
+                    Voto: ${rating}/10
+                  </span>
+                </h3>
+                <div class="flex flex-wrap items-center gap-1.5 text-xs text-slate-500 mt-1">
+                  <span class="bg-slate-100 px-2 py-0.5 rounded">${sub.category}</span>
                   <span>•</span>
                   <span>${sub.cycle === 'monthly' ? 'Mensile' : 'Annuale'}</span>
+                  <span>•</span>
+                  <span class="text-indigo-600 font-medium bg-indigo-50 px-2 py-0.5 rounded">Uso: ${useText}</span>
                 </div>
               </div>
             </div>
 
-            <div class="flex items-center space-x-4">
-              <div class="text-right">
-                <span class="text-base font-bold text-slate-900">€ ${sub.cost.toFixed(2)}</span>
-                <span class="text-xs text-slate-400 block">/${sub.cycle === 'monthly' ? 'mese' : 'anno'}</span>
+            <!-- Prezzi e Azioni -->
+            <div class="flex items-center justify-between w-full sm:w-auto space-x-6 border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100">
+              
+              <!-- Statistiche Uso -->
+              <div class="text-right flex-1 sm:flex-none">
+                <span class="text-sm font-semibold text-slate-800 block">€ ${sub.cost.toFixed(2)}<span class="text-slate-400 font-normal text-xs">/${sub.cycle === 'monthly' ? 'm' : 'y'}</span></span>
+                <span class="text-xs font-medium text-slate-400 mt-0.5 block">${costPerUseText}</span>
               </div>
-              <button onclick="deleteSub(${sub.id})" class="text-slate-400 hover:text-rose-500 p-2 rounded-lg transition" title="Elimina">
-                <i class="fa-solid fa-trash-can"></i>
+
+              <!-- Delete Btn -->
+              <button onclick="deleteSub(${sub.id})" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-white hover:bg-rose-500 rounded-lg transition-colors" title="Elimina">
+                <i class="fa-solid fa-trash-can text-sm"></i>
               </button>
             </div>
           `;
@@ -246,13 +321,12 @@
         });
       }
 
-      // Aggiorna KPI Totali
+      // Aggiorna KPI
       document.getElementById('totalMonthly').textContent = `€ ${monthlyTotal.toFixed(2)}`;
       document.getElementById('totalYearly').textContent = `€ ${yearlyTotal.toFixed(2)}`;
       document.getElementById('totalCount').textContent = subscriptions.length;
     }
 
-    // Inizializzazione al caricamento
     render();
   </script>
 </body>
